@@ -60,16 +60,12 @@ public class RobotContainer {
 
     Trajectory closeNoteBlue =
         TrajectoryGenerator.generateTrajectory(
-            // Start at the origin facing the +X direction
             DriveConstants.blueSubWooferCentre,
-            // Pass through these two interior waypoints, making an 's' curve path
             List.of(
               DriveConstants.noteBlueCentreNote.getTranslation(), 
               DriveConstants.noteBlueCloseAmp.getTranslation(),
-              DriveConstants.noteBlueCloseSource.getTranslation()),
-            // End 3 meters straight ahead of where we started, facing forward
+              DriveConstants.noteFarAmp1.getTranslation()),
             DriveConstants.blueSubWooferCentre,
-            // Pass config
             config);
     
     RamseteCommand ramseteCommand =

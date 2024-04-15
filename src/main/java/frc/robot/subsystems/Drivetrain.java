@@ -46,7 +46,7 @@ public class Drivetrain extends SubsystemBase {
   private final DifferentialDrivetrainSim drivetrainSim;
   private final Pigeon2SimState gyroSim;
 
-  private final Field2d field = new Field2d();
+  private final Field2d gameField = new Field2d();
   
   public Drivetrain() {
     SendableRegistry.addChild(drive, frontLeft);
@@ -101,7 +101,7 @@ public class Drivetrain extends SubsystemBase {
 
       gyroSim = new Pigeon2SimState(gyro);
 
-      SmartDashboard.putData(field);
+      SmartDashboard.putData(gameField);
     } else {
       drivetrainSim = null;
       gyroSim = null;
@@ -114,7 +114,7 @@ public class Drivetrain extends SubsystemBase {
       frontLeftEncoder.getPosition(),
       frontRightEncoder.getPosition());
 
-      field.setRobotPose(odometry.getPoseMeters());
+      gameField.setRobotPose(odometry.getPoseMeters());
   }
 
   @Override
