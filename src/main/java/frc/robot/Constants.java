@@ -6,8 +6,6 @@ package frc.robot;
 
 import java.util.List;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -17,7 +15,6 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj2.command.RamseteCommand;
 
 /** Add your docs here. */
 public class Constants {
