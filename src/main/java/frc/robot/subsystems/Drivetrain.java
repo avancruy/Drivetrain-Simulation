@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.PathPlanning;
 
 public class Drivetrain extends SubsystemBase {
   private final CANSparkMax frontRight = new CANSparkMax(DriveConstants.frontRightID,  MotorType.kBrushless);
@@ -46,7 +47,7 @@ public class Drivetrain extends SubsystemBase {
   private final DifferentialDrivetrainSim drivetrainSim;
   private final Pigeon2SimState gyroSim;
 
-  private final Field2d gameField = new Field2d();
+  private final Field2d field = new Field2d();
   
   public Drivetrain() {
     SendableRegistry.addChild(drive, frontLeft);
@@ -94,18 +95,19 @@ public class Drivetrain extends SubsystemBase {
         DCMotor.getNEO(2), 
         10.65, 
         6.386, 
-        Units.lbsToKilograms(123), 
-        Units.inchesToMeters(6), 
+        Units.lbsToKilograms(125), 
+        Units.inchesToMeters(3), 
         DriveConstants.kTrackwidthMeters, 
         VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005));
 
       gyroSim = new Pigeon2SimState(gyro);
 
-      SmartDashboard.putData(gameField);
+      SmartDashboard.putData(field);
     } else {
       drivetrainSim = null;
       gyroSim = null;
     }
+     field.getObject("far note trajectory").setTrajectory(PathPlanning.blueAllMidNotes);
   }
 
   @Override
@@ -114,7 +116,10 @@ public class Drivetrain extends SubsystemBase {
       frontLeftEncoder.getPosition(),
       frontRightEncoder.getPosition());
 
-      gameField.setRobotPose(odometry.getPoseMeters());
+    field.setRobotPose(odometry.getPoseMeters());
+
+    SmartDashboard.putNumber("X Coord", odometry.getPoseMeters().getX());
+    SmartDashboard.putNumber("Y Coord", odometry.getPoseMeters().getY());
   }
 
   @Override
@@ -148,7 +153,6 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void resetOdometry(Pose2d pose) {
-    drivetrainSim.setPose(pose);
     odometry.resetPosition(
         gyro.getRotation2d(), frontLeftEncoder.getPosition(), frontRightEncoder.getPosition(), pose);
   }

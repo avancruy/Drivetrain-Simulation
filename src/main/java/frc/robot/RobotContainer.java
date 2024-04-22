@@ -4,20 +4,18 @@
 
 package frc.robot;
 
-import java.util.List;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.PathPlanning;
 import frc.robot.subsystems.Drivetrain;
 
 public class RobotContainer {
@@ -36,41 +34,18 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    driver.a().whileTrue(new RunCommand(() -> drivetrain.arcadeDrive(1, 0), drivetrain).withName("drive"));
+    driver.y().onTrue(new InstantCommand(() -> drivetrain.resetOdometry(DriveConstants.blueSubWooferAmpSide)).ignoringDisable(true));
+    driver.b().onTrue(new InstantCommand(() -> drivetrain.resetOdometry(DriveConstants.blueSubWooferCentre)).ignoringDisable(true));
+    driver.a().onTrue(new InstantCommand(() -> drivetrain.resetOdometry(DriveConstants.blueSubWooferSourceSide)).ignoringDisable(true));
   }
 
   public Command getAutonomousCommand() {
-    var autoVoltageConstraint =
-        new DifferentialDriveVoltageConstraint(
-            new SimpleMotorFeedforward(
-                DriveConstants.ksVolts,
-                DriveConstants.kvVoltSecondsPerMeter,
-                DriveConstants.kaVoltSecondsSquaredPerMeter),
-            DriveConstants.kDriveKinematics,
-            10);
-    
-    TrajectoryConfig config =
-        new TrajectoryConfig(
-                DriveConstants.kMaxSpeedMetersPerSecond,
-                DriveConstants.kMaxAccelerationMetersPerSecondSquared)
-            // Add kinematics to ensure max speed is actually obeyed
-            .setKinematics(DriveConstants.kDriveKinematics)
-            // Apply the voltage constraint
-            .addConstraint(autoVoltageConstraint);
 
-    Trajectory closeNoteBlue =
-        TrajectoryGenerator.generateTrajectory(
-            DriveConstants.blueSubWooferCentre,
-            List.of(
-              DriveConstants.noteBlueCentreNote.getTranslation(), 
-              DriveConstants.noteBlueCloseAmp.getTranslation(),
-              DriveConstants.noteFarAmp1.getTranslation()),
-            DriveConstants.blueSubWooferCentre,
-            config);
+    Trajectory trajectory = PathPlanning.blueAllMidNotes;
     
     RamseteCommand ramseteCommand =
             new RamseteCommand(
-                closeNoteBlue,
+                trajectory,
                 drivetrain::getPose,
                 new RamseteController(DriveConstants.kRamseteB, DriveConstants.kRamseteZeta),
                 new SimpleMotorFeedforward(
@@ -85,8 +60,10 @@ public class RobotContainer {
                 drivetrain::tankDriveVolts,
                 drivetrain);
     
-    drivetrain.resetOdometry(closeNoteBlue.getInitialPose());
+    Command runTraj = Commands.runOnce(() -> drivetrain.resetOdometry(trajectory.getInitialPose()))
+      .andThen(ramseteCommand)
+      .andThen(Commands.runOnce(() -> drivetrain.tankDriveVolts(0, 0)));
 
-    return ramseteCommand.andThen(() -> drivetrain.tankDriveVolts(0, 0));
+    return runTraj;
   }
 }

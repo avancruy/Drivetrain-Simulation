@@ -4,10 +4,20 @@
 
 package frc.robot;
 
+import java.util.List;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 
 /** Add your docs here. */
 public class Constants {
@@ -32,16 +42,19 @@ public class Constants {
         public static final double kTrackwidthMeters = 0.683;
         public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);
 
-        public static final double kMaxSpeedMetersPerSecond = 1;
-        public static final double kMaxAccelerationMetersPerSecondSquared = 0.25;
+        public static final double kSlowMaxSpeedMetersPerSecond = 1;
+        public static final double kSlowMaxAccelerationMetersPerSecondSquared = 0.25;
+        public static final double kFastMaxSpeedMetersPerSecond = 3;
+        public static final double kFastMaxAccelerationMetersPerSecondSquared = 2;
 
         public static final double kRamseteB = 2;
         public static final double kRamseteZeta = 0.7;
 
         public static final double kRobotLength = Units.inchesToMeters(37.5);
 
+        public static final Pose2d blueSubWooferAmpSide = new Pose2d(0.755, 6.71, new Rotation2d(Units.degreesToRadians(60)));
         public static final Pose2d blueSubWooferCentre = new Pose2d(Units.inchesToMeters(36.37) + kRobotLength / 2.0, Units.inchesToMeters(218.42), new Rotation2d());
-        public static final Pose2d blueSubWooferAmpSide = new Pose2d(Units.inchesToMeters(36.37), Units.inchesToMeters(218.42), new Rotation2d());
+        public static final Pose2d blueSubWooferSourceSide = new Pose2d(0.755, 4.47, new Rotation2d(Units.degreesToRadians(-60)));
 
         public static final Pose2d noteBlueCloseAmp = new Pose2d(Units.inchesToMeters(114.0), Units.inchesToMeters(275.42), new Rotation2d());
         public static final Pose2d noteBlueCentreNote = new Pose2d(Units.inchesToMeters(114.0), Units.inchesToMeters(218.42), new Rotation2d());
@@ -64,5 +77,74 @@ public class Constants {
         public static final int intakeBottomLimit = 3;
 
         public static final double intakeSpeed = 0.5;
+    }
+
+    public static final class PathPlanning {
+
+        public static DifferentialDriveVoltageConstraint autoVoltageConstraint =
+            new DifferentialDriveVoltageConstraint(
+                new SimpleMotorFeedforward(
+                    DriveConstants.ksVolts,
+                    DriveConstants.kvVoltSecondsPerMeter,
+                    DriveConstants.kaVoltSecondsSquaredPerMeter),
+                DriveConstants.kDriveKinematics,
+                10);
+        
+        public static TrajectoryConfig fastConfig =
+            new TrajectoryConfig(
+                    DriveConstants.kFastMaxSpeedMetersPerSecond,
+                    DriveConstants.kFastMaxAccelerationMetersPerSecondSquared)
+                // Add kinematics to ensure max speed is actually obeyed
+                .setKinematics(DriveConstants.kDriveKinematics)
+                // Apply the voltage constraint
+                .addConstraint(autoVoltageConstraint);
+
+        public static TrajectoryConfig slowConfig =
+            new TrajectoryConfig(
+                    DriveConstants.kSlowMaxSpeedMetersPerSecond,
+                    DriveConstants.kSlowMaxAccelerationMetersPerSecondSquared)
+                // Add kinematics to ensure max speed is actually obeyed
+                .setKinematics(DriveConstants.kDriveKinematics)
+                // Apply the voltage constraint
+                .addConstraint(autoVoltageConstraint);
+
+        public static Trajectory farNoteBlue =
+            TrajectoryGenerator.generateTrajectory(
+                DriveConstants.blueSubWooferCentre,
+                List.of(
+                DriveConstants.noteBlueCentreNote.getTranslation(), 
+                DriveConstants.noteBlueCloseAmp.getTranslation(),
+                DriveConstants.noteFarAmp1.getTranslation()),
+                DriveConstants.blueSubWooferCentre,
+                fastConfig);
+        
+        public static Trajectory closeNoteBlue =
+            TrajectoryGenerator.generateTrajectory(
+                DriveConstants.blueSubWooferCentre,
+                List.of(
+                DriveConstants.noteBlueCentreNote.getTranslation(), 
+                DriveConstants.noteBlueCloseAmp.getTranslation(),
+                DriveConstants.noteFarAmp1.getTranslation()),
+                DriveConstants.blueSubWooferCentre,
+                fastConfig);
+        
+        public static Trajectory blueAmpSideTwoNote =
+            TrajectoryGenerator.generateTrajectory(List.of(
+                DriveConstants.blueSubWooferAmpSide, 
+                DriveConstants.noteBlueCloseAmp),
+                fastConfig);
+        
+        public static Trajectory blueAllMidNotes = 
+            TrajectoryGenerator.generateTrajectory(
+                DriveConstants.blueSubWooferAmpSide,
+                List.of(
+                    DriveConstants.noteFarAmp1.getTranslation(),
+                    DriveConstants.noteFarAmp2.getTranslation(),
+                    DriveConstants.noteFarCentre.getTranslation(),
+                    DriveConstants.noteFarSource2.getTranslation(),
+                    DriveConstants.noteFarSource1.getTranslation()
+                ),
+                DriveConstants.blueSubWooferSourceSide,
+                fastConfig);
     }
 }

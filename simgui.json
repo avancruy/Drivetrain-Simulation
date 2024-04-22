@@ -7,6 +7,10 @@
     "windows": {
       "/SmartDashboard/Field": {
         "bottom": 1476,
+        "far note trajectory": {
+          "arrows": false,
+          "style": "Line"
+        },
         "height": 8.210550308227539,
         "left": 150,
         "right": 2961,
@@ -17,5 +21,8 @@
         }
       }
     }
+  },
+  "NetworkTables View": {
+    "visible": false
   }
 }
