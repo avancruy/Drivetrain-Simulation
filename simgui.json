@@ -2,14 +2,32 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
-      "/SmartDashboard/Field": "Field2d"
+      "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/PIDController[1]": "PIDController",
+      "/SmartDashboard/PIDController[2]": "PIDController",
+      "/SmartDashboard/PIDController[3]": "PIDController",
+      "/SmartDashboard/PathChooser": "String Chooser",
+      "/SmartDashboard/Red Amp Cmd": "Command",
+      "/SmartDashboard/Red Centre Cmd": "Command",
+      "/SmartDashboard/Red Source Cmd": "Command",
+      "/SmartDashboard/Rotate to 0": "Command",
+      "/SmartDashboard/Rotate to 90": "Command",
+      "/SmartDashboard/Rotate to Speaker": "Command"
     },
     "windows": {
       "/SmartDashboard/Field": {
+        "Path": {
+          "arrows": false,
+          "style": "Track"
+        },
+        "blue amp two note": {
+          "arrows": false,
+          "style": "Track"
+        },
         "bottom": 1476,
         "far note trajectory": {
           "arrows": false,
-          "style": "Line"
+          "style": "Track"
         },
         "height": 8.210550308227539,
         "left": 150,
@@ -19,10 +37,30 @@
         "window": {
           "visible": true
         }
+      },
+      "/SmartDashboard/PathChooser": {
+        "window": {
+          "visible": true
+        }
       }
     }
   },
-  "NetworkTables View": {
-    "visible": false
+  "NetworkTables": {
+    "transitory": {
+      "SmartDashboard": {
+        "open": true
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "Connections": {
+      "open": true
+    },
+    "Server": {
+      "Subscribers": {
+        "open": true
+      }
+    },
+    "visible": true
   }
 }

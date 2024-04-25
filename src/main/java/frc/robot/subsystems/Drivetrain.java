@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.util.List;
+
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
 import com.revrobotics.CANSparkMax;
@@ -16,6 +18,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -26,7 +29,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.PathPlanning;
+import frc.robot.Constants.PathConstants;
 
 public class Drivetrain extends SubsystemBase {
   private final CANSparkMax frontRight = new CANSparkMax(DriveConstants.frontRightID,  MotorType.kBrushless);
@@ -107,7 +110,33 @@ public class Drivetrain extends SubsystemBase {
       drivetrainSim = null;
       gyroSim = null;
     }
-     field.getObject("far note trajectory").setTrajectory(PathPlanning.blueAllMidNotes);
+  /*
+     field.getObject("red notes").setPoses(List.of(
+      DriveConstants.noteRedCloseSource,
+      DriveConstants.noteRedCentreNote,
+      DriveConstants.noteRedCloseAmp));
+
+    field.getObject("blue notes").setPoses(List.of(
+      DriveConstants.noteBlueCloseSource,
+      DriveConstants.noteBlueCentreNote,
+      DriveConstants.noteBlueCloseAmp));
+    
+    field.getObject("mid notes").setPoses(List.of(
+      DriveConstants.noteFarAmp1,
+      DriveConstants.noteFarAmp2,
+      DriveConstants.noteFarCentre,
+      DriveConstants.noteFarSource2,
+      DriveConstants.noteFarSource1));
+
+    field.getObject("starting poses").setPoses(List.of(
+      DriveConstants.blueSubWooferAmp,
+      DriveConstants.blueSubWooferCentre,
+      DriveConstants.blueSubWooferSource,
+      DriveConstants.redSubWooferAmp,
+      DriveConstants.redSubWooferCentre,
+      DriveConstants.redSubWooferSource));
+  */
+  SmartDashboard.putNumber("RotateNum", 0);
   }
 
   @Override
@@ -118,8 +147,9 @@ public class Drivetrain extends SubsystemBase {
 
     field.setRobotPose(odometry.getPoseMeters());
 
-    SmartDashboard.putNumber("X Coord", odometry.getPoseMeters().getX());
-    SmartDashboard.putNumber("Y Coord", odometry.getPoseMeters().getY());
+    SmartDashboard.putNumber("AngleToSpeaker", getAngleToSpeaker());
+    SmartDashboard.putNumber("Robot Angle", odometry.getPoseMeters().getRotation().getDegrees());
+    SmartDashboard.putNumber("Rotate test", rotateTest());
   }
 
   @Override
@@ -148,6 +178,10 @@ public class Drivetrain extends SubsystemBase {
     drive.arcadeDrive(speed, rot);
   }
 
+  public double getAngle() {
+    return odometry.getPoseMeters().getRotation().getDegrees();
+  }
+
   public Pose2d getPose() {
     return odometry.getPoseMeters();
   }
@@ -160,4 +194,27 @@ public class Drivetrain extends SubsystemBase {
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
     return new DifferentialDriveWheelSpeeds(frontLeftEncoder.getVelocity(), frontRightEncoder.getVelocity());
   }
+
+  public void setFieldPath(Trajectory traj) {
+    field.getObject("Path").setTrajectory(traj);
+  }
+
+  public double getAngleToSpeaker() {
+    double xDiff = odometry.getPoseMeters().getX();
+    double yDiff = Units.inchesToMeters(218.42) - odometry.getPoseMeters().getY();
+
+    double angle = Units.radiansToDegrees(Math.atan(yDiff/xDiff));
+
+    double toRotate = 180 - angle;
+
+    if (toRotate > 180) {
+      toRotate = -180 - angle;
+    }
+    return toRotate;
+  }
+
+  public double rotateTest() {
+    return (getAngle() > 0) ? 90.0 : -90.0;
+  }
+
 }

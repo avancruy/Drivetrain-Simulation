@@ -49,13 +49,21 @@ public class Constants {
 
         public static final double kRobotLength = Units.inchesToMeters(37.5);
 
-        public static final Pose2d blueSubWooferAmpSide = new Pose2d(0.755, 6.71, new Rotation2d(Units.degreesToRadians(60)));
+        public static final Pose2d blueSubWooferAmp = new Pose2d(0.755, 6.71, new Rotation2d(Units.degreesToRadians(60)));
         public static final Pose2d blueSubWooferCentre = new Pose2d(Units.inchesToMeters(36.37) + kRobotLength / 2.0, Units.inchesToMeters(218.42), new Rotation2d());
-        public static final Pose2d blueSubWooferSourceSide = new Pose2d(0.755, 4.47, new Rotation2d(Units.degreesToRadians(-60)));
+        public static final Pose2d blueSubWooferSource = new Pose2d(0.755, 4.47, new Rotation2d(Units.degreesToRadians(-60)));
+        
+        public static final Pose2d redSubWooferAmp = new Pose2d(15.78, 6.69, new Rotation2d(Units.degreesToRadians(120)));
+        public static final Pose2d redSubWooferCentre = new Pose2d(Units.inchesToMeters(616.36) - kRobotLength / 2.0, Units.inchesToMeters(218.42), new Rotation2d(Units.degreesToRadians(180)));
+        public static final Pose2d redSubWooferSource = new Pose2d(15.78, 4.39, new Rotation2d(Units.degreesToRadians(-120)));
 
         public static final Pose2d noteBlueCloseAmp = new Pose2d(Units.inchesToMeters(114.0), Units.inchesToMeters(275.42), new Rotation2d());
         public static final Pose2d noteBlueCentreNote = new Pose2d(Units.inchesToMeters(114.0), Units.inchesToMeters(218.42), new Rotation2d());
         public static final Pose2d noteBlueCloseSource = new Pose2d(Units.inchesToMeters(114.0), Units.inchesToMeters(161.42), new Rotation2d());
+
+        public static final Pose2d noteRedCloseAmp = new Pose2d(Units.inchesToMeters(538.73), Units.inchesToMeters(275.42), new Rotation2d(Units.degreesToRadians(180)));
+        public static final Pose2d noteRedCentreNote = new Pose2d(Units.inchesToMeters(538.73), Units.inchesToMeters(218.42), new Rotation2d(Units.degreesToRadians(180)));
+        public static final Pose2d noteRedCloseSource = new Pose2d(Units.inchesToMeters(538.73), Units.inchesToMeters(161.42), new Rotation2d(Units.degreesToRadians(180)));
 
         public static final Pose2d noteFarAmp1 = new Pose2d(Units.inchesToMeters(324.6), Units.inchesToMeters(293.64), new Rotation2d());
         public static final Pose2d noteFarAmp2 = new Pose2d(Units.inchesToMeters(324.6), Units.inchesToMeters(227.64), new Rotation2d());
@@ -76,7 +84,7 @@ public class Constants {
         public static final double intakeSpeed = 0.5;
     }
 
-    public static final class PathPlanning {
+    public static final class PathConstants {
 
         public static DifferentialDriveVoltageConstraint autoVoltageConstraint =
             new DifferentialDriveVoltageConstraint(
@@ -104,36 +112,22 @@ public class Constants {
                 .setKinematics(DriveConstants.kDriveKinematics)
                 // Apply the voltage constraint
                 .addConstraint(autoVoltageConstraint);
-
-        public static Trajectory farNoteBlue =
-            TrajectoryGenerator.generateTrajectory(
-                DriveConstants.blueSubWooferCentre,
-                List.of(
-                DriveConstants.noteBlueCentreNote.getTranslation(), 
-                DriveConstants.noteBlueCloseAmp.getTranslation(),
-                DriveConstants.noteFarAmp1.getTranslation()),
-                DriveConstants.blueSubWooferCentre,
-                fastConfig);
-        
-        public static Trajectory closeNoteBlue =
-            TrajectoryGenerator.generateTrajectory(
-                DriveConstants.blueSubWooferCentre,
-                List.of(
-                DriveConstants.noteBlueCentreNote.getTranslation(), 
-                DriveConstants.noteBlueCloseAmp.getTranslation(),
-                DriveConstants.noteFarAmp1.getTranslation()),
-                DriveConstants.blueSubWooferCentre,
-                fastConfig);
         
         public static Trajectory blueAmpSideTwoNote =
             TrajectoryGenerator.generateTrajectory(List.of(
-                DriveConstants.blueSubWooferAmpSide, 
+                DriveConstants.blueSubWooferAmp, 
                 DriveConstants.noteBlueCloseAmp),
+                fastConfig);
+        
+        public static Trajectory redAmpTwoSide = 
+            TrajectoryGenerator.generateTrajectory(List.of(
+                DriveConstants.redSubWooferAmp, 
+                DriveConstants.noteRedCloseAmp),
                 fastConfig);
         
         public static Trajectory blueAllMidNotes = 
             TrajectoryGenerator.generateTrajectory(
-                DriveConstants.blueSubWooferAmpSide,
+                DriveConstants.blueSubWooferAmp,
                 List.of(
                     DriveConstants.noteFarAmp1.getTranslation(),
                     DriveConstants.noteFarAmp2.getTranslation(),
@@ -141,7 +135,7 @@ public class Constants {
                     DriveConstants.noteFarSource2.getTranslation(),
                     DriveConstants.noteFarSource1.getTranslation()
                 ),
-                DriveConstants.blueSubWooferSourceSide,
+                DriveConstants.blueSubWooferSource,
                 fastConfig);
     }
 }
