@@ -8,6 +8,8 @@ import java.util.List;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.ReplanningConfig;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -15,12 +17,14 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
@@ -110,6 +114,22 @@ public class Drivetrain extends SubsystemBase {
       drivetrainSim = null;
       gyroSim = null;
     }
+
+    AutoBuilder.configureRamsete(
+      this::getPose,
+      this::resetOdometry,
+      this::getChassisSpeeds,
+      this::drive,
+      new ReplanningConfig(),
+      () -> {
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent()) {
+          return alliance.get() == DriverStation.Alliance.Red;
+        }
+        return false;
+      },
+      this
+    );
   /*
      field.getObject("red notes").setPoses(List.of(
       DriveConstants.noteRedCloseSource,
@@ -136,7 +156,6 @@ public class Drivetrain extends SubsystemBase {
       DriveConstants.redSubWooferCentre,
       DriveConstants.redSubWooferSource));
   */
-  SmartDashboard.putNumber("RotateNum", 0);
   }
 
   @Override
@@ -192,7 +211,19 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-    return new DifferentialDriveWheelSpeeds(frontLeftEncoder.getVelocity(), frontRightEncoder.getVelocity());
+    //return new DifferentialDriveWheelSpeeds(frontLeftEncoder.getVelocity(), frontRightEncoder.getVelocity());
+    return new DifferentialDriveWheelSpeeds(drivetrainSim.getLeftVelocityMetersPerSecond(), drivetrainSim.getRightVelocityMetersPerSecond());
+  }
+
+  public ChassisSpeeds getChassisSpeeds() {
+    return DriveConstants.kDriveKinematics.toChassisSpeeds(getWheelSpeeds());
+  }
+
+  public void drive(ChassisSpeeds chassisSpeeds) {
+    double left = DriveConstants.kDriveKinematics.toWheelSpeeds(chassisSpeeds).leftMetersPerSecond;
+    double right = DriveConstants.kDriveKinematics.toWheelSpeeds(chassisSpeeds).rightMetersPerSecond;
+
+    tankDriveVolts(left, right);
   }
 
   public void setFieldPath(Trajectory traj) {

@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -89,6 +91,11 @@ public class RobotContainer {
 
     return runTraj;
 */
-    return new RunPath(drivetrain, pathChooser.getSelected());
+    //return new RunPath(drivetrain, pathChooser.getSelected());
+    return pathPlannerAuto();
+  }
+
+  public Command pathPlannerAuto() {
+    return new PathPlannerAuto("test1");
   }
 }
